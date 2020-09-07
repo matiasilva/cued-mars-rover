@@ -1,64 +1,116 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <vector>
+
+#define SIMULATION_TIME 100
+
+void integrate(struct Integrator* integrator, double dt);
+void do_euler(struct Integrator* integrator, double dt);
+void do_verlet(struct Integrator* integrator, double dt, double ppx);
 
 using namespace std;
 
-int main() {
+struct Integrator {
+  double m;
+  double k;
+  double x_0;
+  double v_0;
+  vector<double> t_list;
+  vector<double> x_list;
+  vector<double> v_list;
 
-  // declare variables
-  double m, k, x, v, t_max, dt, t, a;
-  vector<double> t_list, x_list, v_list;
+  // temp vars to be stored in the struct for calcs
+  double a;
+  double x;
+  double v;
 
-  // mass, spring constant, initial position and velocity
-  m = 1;
-  k = 1;
-  x = 0;
-  v = 1;
+  // config
+  bool isVerlet;
+};
 
-  // simulation time and timestep
-  t_max = 100;
-  dt = 0.1;
-
+void integrate(struct Integrator* integrator, double dt) {
   // Euler integration
-  for (t = 0; t <= t_max; t = t + dt) {
-
+  double t;
+  integrator->x = integrator->x_0;
+  integrator->v = integrator->v_0;
+  for (t = 0; t <= SIMULATION_TIME; t = t + dt) {
     // append current state to trajectories
-    t_list.push_back(t);
-    x_list.push_back(x);
-    v_list.push_back(v);
+    double ppx;
+    if (!integrator->x_list.empty()) {
+      ppx = integrator->x_list.back();
+    }
 
-    // calculate new position and velocity
-    a = -k * x / m;
-    x = x + dt * v;
-    v = v + dt * a;
+    integrator->t_list.push_back(t);
+    integrator->x_list.push_back(integrator->x);
+    integrator->v_list.push_back(integrator->v);
 
+    if (integrator->x_list.empty() && integrator->isVerlet) {
+      do_euler(integrator, dt);
+    } else if (integrator->isVerlet) {
+      do_verlet(integrator, dt, ppx);
+    } else {
+      do_euler(integrator, dt);
+    }
   }
+}
 
+void do_euler(struct Integrator* integrator, double dt) {
+  // calculate new position and velocity
+  struct Integrator* i = integrator;
+  i->a = -i->k * i->x / i->m;
+  i->x = i->x + dt * i->v;
+  i->v = i->v + dt * i->a;
+};
+
+void do_verlet(struct Integrator* integrator, double dt, double ppx) {
+  // calculate new position and velocity
+  struct Integrator* i = integrator;
+  i->a = -i->k * i->x / i->m;
+  double px = i->x;
+  i->x = 2 * i->x - ppx + (dt * dt) * i->a;
+  i->v = (i->x - px) / dt;
+};
+
+void save_trajectory(struct Integrator* integrator) {
   // Write the trajectories to file
   ofstream fout;
-  fout.open("trajectories.txt");
-  if (fout) { // file opened successfully
-    for (int i = 0; i < t_list.size(); i = i + 1) {
-      fout << t_list[i] << ' ' << x_list[i] << ' ' << v_list[i] << endl;
+  if (integrator->isVerlet) {
+    fout.open("trajectories-verlet.txt");
+
+  } else {
+    fout.open("trajectories-euler.txt");
+  }
+  if (fout) {  // file opened successfully
+    for (int i = 0; i < integrator->t_list.size(); i = i + 1) {
+      fout << integrator->t_list[i] << ' ' << integrator->x_list[i] << ' '
+           << integrator->v_list[i] << endl;
     }
-  } else { // file did not open successfully
+  } else {  // file did not open successfully
     cout << "Could not open trajectory file for writing" << endl;
   }
+}
 
-  /* The file can be loaded and visualised in Python as follows:
+int main() {
+  // declare variables
+  struct Integrator euler_integrator;
+  struct Integrator verlet_integrator;
 
-  import numpy as np
-  import matplotlib.pyplot as plt
-  results = np.loadtxt('trajectories.txt')
-  plt.figure(1)
-  plt.clf()
-  plt.xlabel('time (s)')
-  plt.grid()
-  plt.plot(results[:, 0], results[:, 1], label='x (m)')
-  plt.plot(results[:, 0], results[:, 2], label='v (m/s)')
-  plt.legend()
-  plt.show()
+  // mass, spring constant, initial position and velocity
+  euler_integrator.m = 1;
+  euler_integrator.k = 1;
+  euler_integrator.x_0 = 0;
+  euler_integrator.v_0 = 1;
+  euler_integrator.isVerlet = false;
 
-  */
+  verlet_integrator.m = 1;
+  verlet_integrator.k = 1;
+  verlet_integrator.x_0 = 0;
+  verlet_integrator.v_0 = 1;
+  verlet_integrator.isVerlet = true;
+
+  integrate(&euler_integrator, 0.1);
+  integrate(&verlet_integrator, 0.1);
+
+  save_trajectory(&euler_integrator);
+  save_trajectory(&verlet_integrator);
 }
