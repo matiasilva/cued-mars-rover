@@ -71,18 +71,18 @@ pos = [0, TOTAL_HEIGHT, 0]
 vel = [mag_vel_circ, 0, 0]
 
 # simulation time, timestep and time
-t_max = 5000
+t_max = 6000
 # critical value 1.7-1.8
 dt = 0.1
 t_array = np.arange(0, t_max, dt)
 
-# euler = do_integration(pos, vel, do_euler)
+euler = do_integration(pos, vel, do_euler)
 verlet = do_integration(pos, vel, do_verlet)
 
 # euler_mag = np.apply_along_axis(np.linalg.norm, 1, euler[0])
 # verlet_mag = np.apply_along_axis(np.linalg.norm, 1, verlet[0])
 
-# euler_x, euler_y = get_xy(euler[0])
+euler_x, euler_y = get_xy(euler[0])
 verlet_x, verlet_y = get_xy(verlet[0])
 
 # plot the position-time graph
@@ -93,7 +93,7 @@ plt.ylabel("y (m)")
 plt.grid()
 plt.ticklabel_format(useOffset=False, style="plain")
 # plt.ylim(bottom=-10, top=10)  set the ylim to bottom, top
-# plt.plot(euler_x, euler_y, label="euler")
+plt.plot(euler_x, euler_y, label="euler")
 plt.plot(verlet_x, verlet_y, label="verlet")
 plt.legend()
 plt.show()
