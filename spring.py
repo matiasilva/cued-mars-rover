@@ -82,6 +82,7 @@ v = 1
 
 # simulation time, timestep and time
 t_max = 100
+# critical value 1.7-1.8
 dt = 0.1
 t_array = np.arange(0, t_max, dt)
 
@@ -94,8 +95,9 @@ plt.figure(1)
 plt.clf()
 plt.xlabel("time (s)")
 plt.grid()
-plt.plot(t_array, eulers[0], label="x (m)")
-plt.plot(t_array, eulers[1], label="v (m/s)")
+plt.ylim(bottom=-4, top=4)     # set the ylim to bottom, top
+#plt.plot(t_array, eulers[0], label="x (m)")
+#plt.plot(t_array, eulers[1], label="v (m/s)")
 plt.plot(t_array, verlets[0], label="x (m) verlet")
 plt.plot(t_array, verlets[1], label="v (m/s) verlet")
 plt.plot(t_array, analytics[0], label="x (m) anayl")
