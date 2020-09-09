@@ -13,6 +13,11 @@ Future plans may be to recreate this using WASM.
 
 ![euler and verlet integrator solution to circular](images/task2.png)
 
+# Task 3
+
+![euler and verlet integrator solution in cpp](images/task3.png)
+
+
 
 
 
