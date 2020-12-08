@@ -22,7 +22,19 @@ struct Integration {
 void autopilot(void)
 // Autopilot to adjust the engine throttle, parachute and attitude control
 {
-  // INSERT YOUR CODE HERE
+  // delta is the throttle required to counter weight on surface
+  double h = position.abs() - MARS_RADIUS;
+  double p_out = K_P * (0.5 + K_H*h + velocity * position.norm());
+  printf("p_out is %f\n", p_out);
+  printf("khterm is %f\n", K_H*position.abs());
+  printf("vel is %f", velocity * position.norm());
+  if (p_out <= -DELTA) {
+      throttle = 0;
+  } else if ((p_out > -DELTA) && (p_out < (1 - DELTA))) {
+      throttle = DELTA + p_out;
+  } else if (p_out >= (1 - DELTA)) {
+      throttle = 1;
+  }
 }
 
 void do_euler(vector3d* curr_pos, vector3d* curr_vel, vector3d* acc,

@@ -86,6 +86,10 @@
 #define MAX_IMPACT_GROUND_SPEED 1.0  // (m/s)
 #define MAX_IMPACT_DESCENT_RATE 1.0  // (m/s)
 
+#define K_P 0.009
+#define K_H 0.005
+#define DELTA 0.2
+
 using namespace std;
 
 class vector3d {
